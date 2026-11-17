@@ -351,6 +351,33 @@ static void maximize_lane_settings(const struct link_training_settings *lt_setti
 	}
 }
 
+/*
+ * Some sinks report channel equalization done at a pre-emphasis level that
+ * does not give an error free link. Raise the pre-emphasis to the minimum
+ * level known to work for such a sink, limited to what the requested voltage
+ * swing allows.
+ */
+static void apply_min_pre_emphasis(const struct link_training_settings *lt_settings,
+		struct dc_lane_settings lane_settings[LANE_COUNT_DP_MAX])
+{
+	enum dc_pre_emphasis min_pre_emphasis;
+	uint32_t lane;
+
+	if (lt_settings->min_pre_emphasis == PRE_EMPHASIS_DISABLED ||
+			link_dp_get_encoding_format(&lt_settings->link_settings) !=
+					DP_8b_10b_ENCODING)
+		return;
+
+	for (lane = 0; lane < LANE_COUNT_DP_MAX; lane++) {
+		min_pre_emphasis = min(lt_settings->min_pre_emphasis,
+				get_max_pre_emphasis_for_voltage_swing(
+						lane_settings[lane].VOLTAGE_SWING));
+
+		if (lane_settings[lane].PRE_EMPHASIS < min_pre_emphasis)
+			lane_settings[lane].PRE_EMPHASIS = min_pre_emphasis;
+	}
+}
+
 void dp_hw_to_dpcd_lane_settings(
 		const struct link_training_settings *lt_settings,
 		const struct dc_lane_settings hw_lane_settings[LANE_COUNT_DP_MAX],
@@ -882,6 +909,7 @@ void dp_decide_lane_settings(
 		/* we find the maximum of the requested settings across all lanes*/
 		/* and set this maximum for all lanes*/
 		maximize_lane_settings(lt_settings, hw_lane_settings);
+		apply_min_pre_emphasis(lt_settings, hw_lane_settings);
 		override_lane_settings(lt_settings, hw_lane_settings);
 
 		if (lt_settings->always_match_dpcd_with_hw_lane_settings)

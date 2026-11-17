@@ -1982,6 +1982,12 @@ struct dc_scratch_space {
 		bool skip_phy_ssc_reduction;
 	} wa_flags;
 	union dc_dp_ffe_preset forced_dp_ffe_preset;
+	/*
+	 * Lowest 8b/10b pre-emphasis level link training may settle on, for
+	 * sinks that report channel equalization done at a level that is
+	 * too low to give an error free link. PRE_EMPHASIS_DISABLED for none.
+	 */
+	enum dc_pre_emphasis min_dp_pre_emphasis;
 	struct link_mst_stream_allocation_table mst_stream_alloc_table;
 
 	struct dc_link_status link_status;

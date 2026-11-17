@@ -139,6 +139,7 @@ void decide_8b_10b_training_settings(
 	lt_settings->should_set_fec_ready = true;
 	lt_settings->disallow_per_lane_settings = true;
 	lt_settings->always_match_dpcd_with_hw_lane_settings = true;
+	lt_settings->min_pre_emphasis = link->min_dp_pre_emphasis;
 	lt_settings->lttpr_mode = dp_decide_8b_10b_lttpr_mode(link);
 	lt_settings->cr_pattern_time = (uint16_t)get_cr_training_aux_rd_interval(link, link_setting, lt_settings->lttpr_mode);
 	dp_hw_to_dpcd_lane_settings(lt_settings, lt_settings->hw_lane_settings, lt_settings->dpcd_lane_settings);
