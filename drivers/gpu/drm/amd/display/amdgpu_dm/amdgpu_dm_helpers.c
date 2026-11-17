@@ -139,6 +139,19 @@ STATIC_IFN_KUNIT void apply_edid_quirks(struct dc_link *link, struct edid *edid,
 			link->ctx->dc->debug.psr_phy_force_phy_power_down_up_level_2 = true;
 		}
 		break;
+	/*
+	 * Workaround for the HP ZBook Ultra G1a 14 OLED panel, which now and
+	 * then reports channel equalization done at pre-emphasis level 1.
+	 * The link then runs with symbol errors and the screen flickers until
+	 * the next link training. Do not train this panel below level 2.
+	 */
+	case drm_edid_encode_panel_id('S', 'D', 'C', 0x41B3):
+		if (dc_is_embedded_signal(link->connector_signal)) {
+			drm_dbg_driver(dev, "Min DP pre-emphasis level 2 on panel id %X\n",
+				       panel_id);
+			link->min_dp_pre_emphasis = PRE_EMPHASIS_LEVEL2;
+		}
+		break;
 	/* Workaround for monitors that get corrupted by the PHY SSC reduction */
 	case drm_edid_encode_panel_id('D', 'E', 'L', 0x4147):
 		drm_dbg_driver(dev, "Skip PHY SSC reduction on panel id %X\n", panel_id);

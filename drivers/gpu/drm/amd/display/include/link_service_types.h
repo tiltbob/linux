@@ -97,6 +97,11 @@ struct link_training_settings {
 	/* dpcd lane settings will always use the same hw lane settings
 	 * even if it doesn't match requested lane adjust */
 	bool always_match_dpcd_with_hw_lane_settings;
+	/*
+	 * do not go below this 8b/10b pre-emphasis level when the sink
+	 * requests a lane adjustment, as far as the voltage swing allows
+	 */
+	enum dc_pre_emphasis min_pre_emphasis;
 
 	/*****************************************************************
 	* training states - parameters that can change in link training

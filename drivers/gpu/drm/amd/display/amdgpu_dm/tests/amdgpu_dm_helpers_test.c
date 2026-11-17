@@ -221,6 +221,26 @@ static void dm_test_apply_edid_quirks_skip_phy_ssc(struct kunit *test)
 }
 
 /**
+ * dm_test_apply_edid_quirks_min_pre_emphasis - Test SDC 0x41B3 pre-emphasis quirk
+ * @test: The KUnit test context
+ */
+static void dm_test_apply_edid_quirks_min_pre_emphasis(struct kunit *test)
+{
+	struct dc_edid_caps edid_caps = {0};
+	struct dc_link *link = dm_test_quirk_link(test);
+	struct edid *edid = dm_test_edid_with_panel_id(test,
+			drm_edid_encode_panel_id('S', 'D', 'C', 0x41B3));
+
+	link->connector_signal = SIGNAL_TYPE_DISPLAY_PORT;
+	apply_edid_quirks(link, edid, &edid_caps);
+	KUNIT_EXPECT_EQ(test, link->min_dp_pre_emphasis, PRE_EMPHASIS_DISABLED);
+
+	link->connector_signal = SIGNAL_TYPE_EDP;
+	apply_edid_quirks(link, edid, &edid_caps);
+	KUNIT_EXPECT_EQ(test, link->min_dp_pre_emphasis, PRE_EMPHASIS_LEVEL2);
+}
+
+/**
  * dm_test_apply_edid_quirks_force_freesync_min - Test ACR 0x08AF FreeSync min quirk
  * @test: The KUnit test context
  */
@@ -255,6 +275,7 @@ static void dm_test_apply_edid_quirks_unknown_noop(struct kunit *test)
 	KUNIT_EXPECT_FALSE(test, edid_caps.panel_patch.remove_sink_ext_caps);
 	KUNIT_EXPECT_FALSE(test, edid_caps.panel_patch.disable_colorimetry);
 	KUNIT_EXPECT_FALSE(test, link->wa_flags.skip_phy_ssc_reduction);
+	KUNIT_EXPECT_EQ(test, link->min_dp_pre_emphasis, PRE_EMPHASIS_DISABLED);
 }
 
 /**
@@ -4850,6 +4871,7 @@ static struct kunit_case amdgpu_dm_helpers_test_cases[] = {
 	KUNIT_CASE(dm_test_apply_edid_quirks_disable_colorimetry),
 	KUNIT_CASE(dm_test_apply_edid_quirks_psr_phy_power_down),
 	KUNIT_CASE(dm_test_apply_edid_quirks_skip_phy_ssc),
+	KUNIT_CASE(dm_test_apply_edid_quirks_min_pre_emphasis),
 	KUNIT_CASE(dm_test_apply_edid_quirks_force_freesync_min),
 	KUNIT_CASE(dm_test_apply_edid_quirks_unknown_noop),
 	KUNIT_CASE(dm_test_apply_edid_quirks_disable_second_tile),
